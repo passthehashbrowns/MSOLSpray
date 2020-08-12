@@ -1,4 +1,14 @@
-# MSOLSpray
+## Fork Differences
+
+This fork of MSOLSpray supports the DoubleTap tool from Porchetta Industries. If you don't want to pull down another file, simply add 
+`-Proxy http://127.0.0.1:8080 -SkipCertificateCheck` 
+to the Invoke-WebRequest command on the 97th line of the original MSOLSpray. This only works on PowerShell 6+ as that's when the SkipCertificateCheck flag was added.
+
+You can run this version of MSOLSpray in the same way as the original and adding `-Proxy http://127.0.0.1:8080` to your command. You should start to see requests coming through DoubleTap.
+
+Thanks to Beau and Marcello for their amazing tools.
+
+## MSOLSpray
 A password spraying tool for Microsoft Online accounts (Azure/O365). The script logs if a user cred is valid, if MFA is enabled on the account, if a tenant doesn't exist, if a user doesn't exist, if the account is locked, or if the account is disabled. 
 
 BE VERY CAREFUL NOT TO LOCKOUT ACCOUNTS!
